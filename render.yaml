@@ -11,7 +11,7 @@ services:
       - key: GROQ_MODEL
         value: llama-3.3-70b-versatile
       - key: FRONTEND_URL
-        value: https://interviewiq-web.onrender.com
+        value: https://interview-iq-three-dusky.vercel.app
 
   - type: static
     name: interviewiq-web
@@ -20,4 +20,4 @@ services:
     staticPublishPath: build
     envVars:
       - key: REACT_APP_API_URL
-        value: https://interviewiq-api.onrender.com
+        value: https://interviewiq-ornw.onrender.com
