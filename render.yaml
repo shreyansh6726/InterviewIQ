@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: interviewiq-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+      - key: FRONTEND_URL
+        value: https://interviewiq-web.onrender.com
+
+  - type: static
+    name: interviewiq-web
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://interviewiq-api.onrender.com
