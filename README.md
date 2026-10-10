@@ -81,3 +81,7 @@ prompted for the `sync: false` variable, and replace the placeholder
 the actual service URLs if Render assigns different names. The backend
 `FRONTEND_URL` value controls CORS and may contain comma-separated frontend
 origins.
+
+After changing backend source or Render environment variables, wait for the
+Render deploy to finish successfully. The running service must be redeployed
+before its CORS configuration changes take effect.

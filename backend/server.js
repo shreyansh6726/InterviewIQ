@@ -27,20 +27,25 @@ const upload = multer({
   },
 });
 
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000')
-  .split(',')
+const allowedOrigins = [
+  'http://localhost:3000',
+  ...(process.env.FRONTEND_URL || '').split(','),
+]
   .map((origin) => origin.trim().replace(/\/$/, ''))
   .filter(Boolean);
 
-app.use(cors({
+const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ''))) {
       callback(null, true);
       return;
     }
-    callback(new Error('This frontend origin is not allowed by the API.'));
+    callback(null, false);
   },
-}));
+};
+
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 app.use(express.json({ limit: '1mb' }));
 
 function parseModelJson(content) {
