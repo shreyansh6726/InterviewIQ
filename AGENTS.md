@@ -1,96 +1,199 @@
 # InterviewIQ Agent Guidelines
 
-## Project Context
-
-InterviewIQ is an AI-assisted mock interview and performance analysis platform for students and job candidates preparing for technical and HR placement interviews. It combines resume-aware interview questions, browser-based voice interaction, speech analysis, interview scoring, and dashboards for candidates and recruiters.
-
-The primary user flow is:
-
-1. A candidate registers or logs in.
-2. The candidate uploads a PDF or text resume.
-3. The candidate selects a target role and interview round.
-4. The system generates or selects relevant questions using the resume and configured AI integrations.
-5. The candidate answers through text or browser speech recognition while using the webcam preview.
-6. The backend analyzes answers and speech patterns, stores the session, and calculates technical, communication, and confidence scores.
-7. The candidate reviews a report with strengths, weaknesses, recommendations, and benchmark answers.
-8. Recruiters or administrators review candidate history and cohort-level readiness metrics.
-
-## Problem Statement
-
-Candidates often have the required academic knowledge but lack realistic interview practice, immediate feedback, and a consistent way to measure improvement. Generic question lists do not adapt to a candidate’s resume or target role, while human-led practice is difficult to schedule and does not always provide objective analysis of communication, fluency, or technical depth.
-
-The project addresses the need for an accessible practice environment that simulates an interview, evaluates both the content and delivery of answers, and turns each session into actionable preparation feedback.
-
-## Proposed Solution
-
-InterviewIQ provides an end-to-end practice loop through a web application:
-
-- Resume parsing extracts skills, frameworks, and projects to personalize questions.
-- A configurable AI question and evaluation service uses LLM integrations when available and retains intelligent rule-based or curated fallbacks when they are not.
-- Browser Speech APIs provide text-to-speech questions and speech-to-text answers without requiring a separate voice service.
-- Backend NLP heuristics measure speech cadence, words per minute, hesitation, filler words, and answer quality.
-- SQLAlchemy and SQLite persist users, resumes, interview sessions, questions, answers, and reports.
-- Candidate dashboards show historical scores and placement-readiness trends.
-- Admin dashboards provide candidate rosters, batch performance, and cohort analytics.
-
 ## Project Overview
 
-InterviewIQ is a full-stack mock-interview platform:
+InterviewIQ is a full-stack resume intelligence and voice interview practice
+application. A candidate uploads a resume, optionally pastes a job
+description, receives a LUMEN job-fit analysis, completes a voice-only
+interview, and receives an AI-generated score and feedback.
 
-- `backend/` contains the FastAPI API, SQLAlchemy models, SQLite persistence, authentication, resume parsing, interview services, and admin endpoints.
-- `frontend/` contains the React 18/Vite client, Tailwind styling, interview flows, dashboards, and browser speech/webcam integrations.
-- The API is served on `http://localhost:8000`; the Vite development server is served on `http://localhost:5173`.
-- The backend uses Python 3.12, FastAPI, Uvicorn, Pydantic, SQLAlchemy, SQLite, JWT authentication, PDF extraction, and optional Groq, Gemini, or OpenAI integrations.
-- The frontend uses React 18, Vite, Tailwind CSS, Lucide icons, Canvas Confetti, browser speech recognition, and webcam preview components.
-- See [README.md](README.md) for the full feature list, architecture diagram, and setup details.
+The repository has two applications:
+
+- `backend/` is a Node.js CommonJS Express API.
+- `frontend/` is a Create React App client using React functional components.
+
+The backend calls the Groq OpenAI-compatible API. LUMEN is the application
+persona implemented by the backend prompts; it is not a separate provider or
+frontend API.
+
+## User Flow
+
+1. The candidate uploads a PDF, TXT, or Markdown resume.
+2. The candidate pastes an optional job description.
+3. The backend extracts resume text and LUMEN returns:
+   - Candidate details and summary
+   - Job-fit score and matched requirements
+   - Skills, experience, education, projects, and certifications
+   - Strengths, improvements, and suggested roles
+4. The candidate starts a LUMEN voice interview.
+5. LUMEN asks five personalized behavioral, technical, and role-fit questions.
+6. Browser Speech Synthesis reads questions aloud.
+7. Browser Speech Recognition captures answers; there is intentionally no typed
+   answer input in the interview flow.
+8. LUMEN evaluates the transcript and returns overall, technical,
+   communication, and relevance scores with feedback.
+
+## Technology and Runtime
+
+### Backend
+
+- Node.js with Express
+- `multer` for in-memory resume uploads
+- `pdf-parse` for PDF text extraction
+- `dotenv` for environment configuration
+- Groq Chat Completions API for all LUMEN analysis
+- In-memory interview sessions; sessions are lost when the process restarts
+- Local API: `http://localhost:8000`
+
+Backend entry point: `backend/server.js`.
+
+### Frontend
+
+- React and Create React App
+- Browser Speech Recognition for voice answers
+- Browser Speech Synthesis for LUMEN questions and completion messages
+- Local development URL: `http://localhost:3000`
+- Backend URL is read from `REACT_APP_API_URL`
+
+Frontend entry point: `frontend/src/App.js`.
+
+## API Contracts
+
+Preserve the `/api` prefix and existing response shapes.
+
+- `GET /api/health`
+- `POST /api/resume/analyze`
+  - Multipart field: `resume`
+  - Optional multipart field: `jobDescription`
+  - Supports PDF, TXT, and Markdown files up to 5 MB
+- `POST /api/interview/start`
+  - JSON body: `{ analysis, jobDescription }`
+  - Returns `{ interviewId, question }`
+- `POST /api/interview/:interviewId/answer`
+  - JSON body: `{ answer }`
+  - Returns the next question or final score data
+
+Routes should handle HTTP concerns. Groq prompting and response parsing should
+remain in backend service/helper functions rather than being duplicated in
+frontend code.
+
+## Environment and Secrets
+
+Backend secrets belong only in `backend/.env` or the Render backend service:
+
+```env
+GROQ_API_KEY=your_groq_api_key
+GROQ_MODEL=llama-3.3-70b-versatile
+FRONTEND_URL=http://localhost:3000
+```
+
+The frontend may contain only the public backend URL:
+
+```env
+REACT_APP_API_URL=http://localhost:8000
+```
+
+Never put `GROQ_API_KEY` or another secret in `frontend/.env`. Create React App
+embeds `REACT_APP_*` values into browser JavaScript, making them public.
+Never commit `.env` files, API keys, tokens, database credentials, or generated
+local data.
+
+## Deployment
+
+`render.yaml` defines the intended Render services:
+
+- `interviewiq-api`: Node backend with private `GROQ_API_KEY`
+- `interviewiq-web`: optional Render static frontend
+
+The current frontend may also be deployed on Vercel. For the current deployed
+URLs, backend Render configuration must allow the exact Vercel origin:
+
+```env
+FRONTEND_URL=https://interview-iq-three-dusky.vercel.app
+```
+
+The Vercel project must build with:
+
+```env
+REACT_APP_API_URL=https://interviewiq-ornw.onrender.com
+```
+
+After changing frontend environment variables, trigger a new Vercel build.
+After changing backend source or environment variables, wait for the Render
+deployment to finish before testing CORS or API behavior.
+
+The backend CORS allowlist must remain explicit. Do not allow arbitrary
+origins in production.
 
 ## Repository Conventions
 
-- Keep backend changes within the existing FastAPI structure: routes handle HTTP concerns, schemas define request/response validation, models define persistence, and services contain interview, NLP, and resume-processing logic.
-- Keep frontend changes organized by responsibility: reusable UI belongs in `frontend/src/components/`, screen-level flows in `frontend/src/pages/`, and API/browser helpers in `frontend/src/utils/`.
-- Preserve the existing API prefix (`/api`) and the endpoint contracts consumed by `frontend/src/utils/api.js`.
-- Use the existing React functional-component and hook patterns. Match the current Tailwind utility styling and dark visual theme.
-- Use environment variables for secrets and optional LLM keys. Never commit `.env` files, API keys, tokens, database credentials, or generated local databases.
-- Do not edit `backend/venv/` or `frontend/node_modules/`; they are local dependency directories.
-- Make focused changes and update the README when setup, scripts, endpoints, or user-visible behavior changes.
+- Keep backend changes in `backend/server.js` unless a focused helper/module is
+  clearly warranted.
+- Keep frontend UI and browser integration in `frontend/src/`.
+- Use existing functional React and hook patterns.
+- Keep the LUMEN name and user-facing voice consistent.
+- Validate upload types, file size, request bodies, and external API failures.
+- Keep Groq credentials server-side and never expose them in API responses,
+  frontend source, logs, or error messages.
+- Do not edit `backend/node_modules/`, `frontend/node_modules/`, or generated
+  frontend `build/` output.
+- Update `README.md` when setup, deployment, endpoint contracts, or
+  user-visible behavior changes.
+- Avoid unrelated refactors and preserve existing resume-analysis behavior when
+  changing interview behavior.
 
 ## Local Development
 
 From the repository root on Windows:
 
 ```bat
-setup.bat
-start.bat
-```
-
-For manual startup, use separate terminals:
-
-```bat
 cd backend
-venv\Scripts\activate
-python run.py
+npm install
+npm start
 ```
+
+In a second terminal:
 
 ```bat
 cd frontend
 npm install
-npm run dev
+npm start
 ```
 
-Backend environment values belong in `backend/.env`; use `.env.example` as the template. The FastAPI Swagger UI is available at `http://localhost:8000/docs`.
+Copy `frontend/.env.example` to `frontend/.env` and set the local or deployed
+backend URL before starting the frontend.
 
 ## Validation
 
-- Frontend production build: `cd frontend && npm run build`
-- Frontend local preview: `cd frontend && npm run preview`
-- Backend smoke check: start the backend with `python run.py` and verify `http://localhost:8000/docs`.
-- There is currently no configured automated test suite; when adding behavior, add focused tests or document a reproducible manual verification path.
-- Run the smallest relevant validation after each change, then report any checks that could not be run.
+Run the smallest relevant checks:
+
+```bat
+cd backend
+npm test
+```
+
+```bat
+cd frontend
+npm run build
+```
+
+For deployment troubleshooting, verify:
+
+1. `GET /api/health` returns HTTP 200.
+2. The backend Render service is running the latest deployment.
+3. `FRONTEND_URL` exactly matches the browser origin, without a trailing slash.
+4. The built frontend points to the correct `REACT_APP_API_URL`.
+5. Browser microphone permission is granted and the browser supports Speech
+   Recognition, such as Chrome or Edge.
+
+There is currently no comprehensive automated test suite. Add focused tests or
+document reproducible manual verification when introducing new behavior.
 
 ## Change Safety
 
-- Preserve authentication and authorization boundaries, especially the JWT flow and admin-only endpoints.
-- Validate uploaded files, request payloads, and user-controlled content at the API boundary.
-- Use SQLAlchemy/database helpers rather than ad hoc database access, and avoid destructive schema or data changes unless explicitly requested.
-- Keep fallback behavior for optional LLM integrations intact unless the task explicitly changes it.
-- Do not silently swallow new errors or return success-shaped fallback data; surface failures using the project’s existing error-handling patterns.
+- Surface Groq, parsing, upload, and speech-related failures explicitly.
+- Do not silently return fabricated analysis, scores, or fallback success data.
+- Do not broaden CORS to `*` while credentials or user data are involved.
+- Preserve the backend-only secret boundary.
+- Do not perform destructive data or filesystem operations without explicit
+  user approval.
