@@ -13,8 +13,11 @@ h2 { font-size: 22px; margin: 0 0 18px; }
 .upload-card, .card { background: linear-gradient(145deg, #131d30, var(--panel)); border: 1px solid var(--line); border-radius: 18px; padding: 24px; }
 .upload-card { display: grid; grid-template-columns: 1fr auto; gap: 14px 24px; align-items: center; margin-bottom: 42px; }
 label { display: block; font-weight: 700; font-size: 17px; }
+.optional { color: var(--muted); font-size: 12px; font-weight: 400; }
 .muted { color: var(--muted); margin: 4px 0 0; }
 input[type=file] { color: var(--muted); max-width: 100%; }
+textarea { width: 100%; grid-column: 1 / -1; border: 1px solid var(--line); border-radius: 10px; background: #0b1220; color: var(--ink); font: inherit; padding: 13px; resize: vertical; }
+textarea:focus { border-color: var(--accent); outline: 2px solid #8b7cff33; }
 button { border: 0; border-radius: 10px; background: var(--accent); color: white; font: inherit; font-weight: 700; padding: 12px 19px; cursor: pointer; }
 button:disabled { cursor: wait; opacity: .65; }
 .file-name, .error { grid-column: 1 / -1; font-size: 13px; }
@@ -37,4 +40,28 @@ li + li { margin-top: 8px; }
 .accent { color: var(--green); font-weight: 600; margin: 2px 0 9px; }
 .compact-item { display: grid; gap: 3px; }
 .compact-item small { font-size: 12px; color: #a99fff; }
-@media (max-width: 700px) { .app-shell { padding: 44px 16px 70px; } .upload-card, .grid { grid-template-columns: 1fr; } .result-heading { display: block; } .role-list { margin-top: 18px; } button { width: 100%; } }
+.text-button { background: transparent; color: var(--muted); padding: 0; }
+.text-button:hover { color: var(--ink); }
+.lumen-mark { color: var(--green); font: 700 14px 'Space Grotesk', sans-serif; letter-spacing: .18em; margin: 34px 0 25px; }
+.lumen-mark span { color: var(--accent); font-size: 20px; margin-right: 8px; }
+.interview-shell { max-width: 850px; }
+.voice-stage { min-height: 520px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border: 1px solid var(--line); border-radius: 24px; padding: 50px 24px; background: radial-gradient(circle at center, #192541 0, #101827 45%, #0b101b 100%); }
+.voice-stage h1 { max-width: 680px; font-size: clamp(28px, 5vw, 48px); margin: 22px 0 12px; }
+.question-type { color: #a99fff; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; margin-top: 14px; }
+.voice-button { width: 150px; height: 150px; border-radius: 50%; margin: 36px 0 24px; background: var(--accent); box-shadow: 0 0 0 14px #8b7cff1c, 0 0 60px #8b7cff66; display: grid; place-content: center; gap: 2px; }
+.voice-button span { font-size: 32px; line-height: 1; }
+.voice-button.listening { background: #ef6d88; box-shadow: 0 0 0 14px #ef6d881c, 0 0 60px #ef6d8866; animation: pulse 1.5s infinite; }
+.spoken-answer { width: min(650px, 100%); border-top: 1px solid var(--line); padding-top: 22px; }
+.spoken-answer p { font-size: 17px; color: #d7dcef; }
+.score-hero { text-align: center; padding: 60px 0 38px; }
+.score-hero h1 { color: var(--green); font-size: 92px; margin: 15px 0 0; }
+.score-hero h1 small { color: var(--muted); font-size: 28px; }
+.score-hero p { color: var(--muted); max-width: 650px; margin: 0 auto; }
+.score-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+.score-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; text-align: center; display: grid; gap: 5px; }
+.score-card strong { color: #cbd5ff; font-size: 30px; font-family: 'Space Grotesk', sans-serif; }
+.score-card span { color: var(--muted); font-size: 13px; }
+.fit-score { color: var(--green); font: 700 42px 'Space Grotesk', sans-serif; }
+.fit-score small { color: var(--muted); font-size: 16px; }
+@keyframes pulse { 50% { transform: scale(1.04); } }
+@media (max-width: 700px) { .app-shell { padding: 44px 16px 70px; } .upload-card, .grid, .score-grid { grid-template-columns: 1fr; } .result-heading { display: block; } .role-list { margin-top: 18px; } button { width: 100%; } .voice-stage { padding: 35px 16px; } }

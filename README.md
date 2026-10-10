@@ -1,6 +1,7 @@
 # InterviewIQ
 
-InterviewIQ turns a resume into a structured interview profile using Groq.
+InterviewIQ turns a resume and job description into a structured interview profile using
+LUMEN, an InterviewIQ voice interview coach powered only by the server-side Groq API.
 
 ## Run locally
 
@@ -38,3 +39,21 @@ contact details, summary, skills, experience, education, projects,
 certifications, strengths, improvement areas, and suggested roles.
 
 The Groq key is used only by the backend and is never sent to the browser.
+
+## LUMEN voice interview
+
+After resume analysis, select **Start voice interview**. LUMEN asks five
+personalized behavioral, technical, and role-fit questions. The browser's
+Speech Recognition API captures answers and Speech Synthesis reads questions
+aloud; there is no typed answer field. At the end, LUMEN evaluates the
+transcript and returns overall, technical, communication, and job-relevance
+scores plus strengths, improvements, and a recommendation.
+
+The interview endpoints are:
+
+- `POST /api/interview/start` with `{ analysis, jobDescription }`
+- `POST /api/interview/:interviewId/answer` with `{ answer }`
+
+Voice input requires a browser with Speech Recognition support, such as
+Chrome or Edge. Interview sessions are held in backend memory and expire when
+the server restarts.
